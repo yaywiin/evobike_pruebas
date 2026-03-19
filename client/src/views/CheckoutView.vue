@@ -1,7 +1,92 @@
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useCartStore } from '@/stores/cart'
+import { useRouter } from 'vue-router'
 
 const cart = useCartStore()
+const isProcessing = ref(false)
+const router = useRouter()
+const mpPublicKey = 'APP_USR-3b174f88-7df2-4b88-ad03-df5619188ee8'
+
+onMounted(() => {
+  if (cart.items.length > 0) {
+    initializePaymentBrick()
+  }
+})
+
+const initializePaymentBrick = async () => {
+  try {
+    const mp = new window.MercadoPago(mpPublicKey, {
+      locale: 'es-MX'
+    })
+    
+    const bricksBuilder = mp.bricks()
+    
+    const renderPaymentBrick = async (bricksBuilder) => {
+      const settings = {
+        initialization: {
+          amount: cart.subtotal,
+          preferenceId: '<PREFERENCE_ID>',
+        },
+        customization: {
+          visual: {
+            style: {
+              theme: 'default',
+            }
+          },
+          maxInstallments: 1,
+        },
+        callbacks: {
+          onReady: () => {
+            console.log('Payment Brick Ready')
+          },
+          onSubmit: async (cardFormData) => {
+            isProcessing.value = true
+            try {
+              const response = await fetch("http://localhost:3001/api/process_payment", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(cardFormData),
+              })
+              
+              const result = await response.json()
+              console.log('Resultado del pago:', result)
+              
+              if (result.status === 'approved' || result.status === 'in_process') {
+                alert(`¡Pago exitoso o en proceso! ID: ${result.id}`)
+                cart.clearCart()
+                router.push('/')
+              } else {
+                alert(`Hubo un problema con el pago: ${result.status_detail}`)
+              }
+            } catch (error) {
+              console.error(error)
+              alert('Ocurrió un error al procesar tu pago por favor intenta de nuevo.')
+            } finally {
+              isProcessing.value = false
+            }
+          },
+          onError: (error) => {
+            console.error(error)
+          },
+        },
+      }
+      
+      window.paymentBrickController = await bricksBuilder.create(
+        'cardPayment',
+        'paymentBrick_container',
+        settings
+      )
+    }
+    
+    renderPaymentBrick(bricksBuilder)
+    
+  } catch (error) {
+    console.error('Error al cargar Mercado Pago Brick:', error)
+  }
+}
 
 const formatPrice = (price) => {
   const numericPrice = typeof price === 'string' 
@@ -12,10 +97,7 @@ const formatPrice = (price) => {
   return `$ ${numericPrice.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 }
 
-const processCheckout = () => {
-    // This function will connect to a payment gateway or Woocommerce checkout process later
-    alert('Funcionalidad de pago en construcción.')
-}
+// processCheckout manual eliminado, el Brick maneja su propio submit
 </script>
 
 <template>
@@ -81,17 +163,8 @@ const processCheckout = () => {
           </div>
           
           <div class="checkout-block">
-            <h3>Método de Pago</h3>
-            <div class="payment-methods">
-              <label class="payment-option">
-                <input type="radio" name="payment_method" value="card" checked />
-                <span>Tarjeta de Crédito / Débito</span>
-              </label>
-              <label class="payment-option">
-                <input type="radio" name="payment_method" value="transfer" />
-                <span>Transferencia Bancaria</span>
-              </label>
-            </div>
+            <h3>Pago Seguro</h3>
+            <div id="paymentBrick_container"></div>
           </div>
         </div>
         
@@ -132,7 +205,9 @@ const processCheckout = () => {
               </div>
             </div>
             
-            <button class="btn-pay" @click="processCheckout">Confirmar y Pagar</button>
+            <div class="secure-checkout-notice" style="margin-top: 1.5rem; text-align: center; color: #6b7280; font-size: 0.9rem;">
+              <p>🔒 Completa tu pago de forma segura usando el formulario de la izquierda.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -385,7 +460,13 @@ const processCheckout = () => {
   transition: background-color 0.2s, transform 0.2s;
 }
 
-.btn-pay:hover {
+.btn-pay:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-pay:not(:disabled):hover {
   background-color: var(--color-brand-dark, #028016);
   transform: translateY(-2px);
 }

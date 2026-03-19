@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+const { MercadoPagoConfig, Payment } = require("mercadopago");
 
 const app = express();
 app.use(cors());
@@ -10,6 +11,9 @@ app.use(express.json());
 const WC_URL = process.env.VITE_WC_URL || "https://tu-tienda.com";
 const WC_KEY = process.env.VITE_WC_CONSUMER_KEY || "";
 const WC_SECRET = process.env.VITE_WC_CONSUMER_SECRET || "";
+
+// Configurar Mercado Pago
+const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN || "TEST" });
 
 app.get("/api/products/bestsellers", async (req, res) => {
   try {
@@ -23,6 +27,12 @@ app.get("/api/products/bestsellers", async (req, res) => {
         consumer_secret: WC_SECRET,
       },
     });
+
+    // Validar que sea un array (si WC devuelve error, viene como objeto)
+    if (!Array.isArray(response.data)) {
+      console.error("WC bestsellers response is not an array:", JSON.stringify(response.data));
+      return res.status(502).json({ error: "Respuesta inesperada de WooCommerce", detail: response.data });
+    }
 
     // Mapeamos solo lo que necesita el frontend para no enviar data innecesaria
     const mappedProducts = response.data.map((product) => {
@@ -83,9 +93,14 @@ app.get("/api/products/random", async (req, res) => {
       },
     });
 
-    // Validar si hay productos
-    let allProducts = response.data || [];
-    
+    // Validar que sea un array (si WC devuelve error, viene como objeto)
+    if (!Array.isArray(response.data)) {
+      console.error("WC random response is not an array:", JSON.stringify(response.data));
+      return res.status(502).json({ error: "Respuesta inesperada de WooCommerce", detail: response.data });
+    }
+
+    let allProducts = response.data;
+
     // Sort array randomly
     allProducts.sort(() => 0.5 - Math.random());
     
@@ -203,6 +218,40 @@ app.get("/api/products/:id", async (req, res) => {
   } catch (error) {
     console.error("Error fetching single WC product:", error.message);
     res.status(500).json({ error: "Error connecting to WooCommerce store" });
+  }
+});
+
+// Ruta para procesar el pago directamente con Payment Brick
+app.post("/api/process_payment", async (req, res) => {
+  try {
+    const paymentData = req.body;
+    
+    const payment = new Payment(client);
+    
+    const result = await payment.create({
+      body: {
+        transaction_amount: paymentData.transaction_amount,
+        token: paymentData.token,
+        description: paymentData.description,
+        installments: paymentData.installments,
+        payment_method_id: paymentData.payment_method_id,
+        issuer_id: paymentData.issuer_id,
+        payer: {
+          email: paymentData.payer.email,
+          identification: paymentData.payer.identification
+        }
+      }
+    });
+
+    res.json({
+      status: result.status,
+      status_detail: result.status_detail,
+      id: result.id
+    });
+
+  } catch (error) {
+    console.error("Error processing MP payment:", error);
+    res.status(500).json({ error: "No se pudo procesar el pago" });
   }
 });
 

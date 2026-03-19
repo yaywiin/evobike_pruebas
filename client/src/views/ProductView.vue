@@ -104,7 +104,12 @@ const getColorMap = (colorName) => {
     'blanco': '#ffffff',
     'gris': '#9ca3af',
     'verde': '#10b981',
-    'amarillo': '#eab308'
+    'amarillo': '#eab308',
+    'naranja': '#f97316',
+    'rosa': '#ec4899',
+    'morado': '#a855f7',
+    'cafe': '#713f12',
+    'celeste': '#38bdf8'
   }
   
   // Limpiamos el texto
