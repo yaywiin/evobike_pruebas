@@ -15,10 +15,12 @@ const recommendedProducts = ref([])
 const quantity = ref(1)
 const mainImage = ref(null)
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
 const fetchProduct = async (id) => {
   loading.value = true
   try {
-    const res = await fetch(`http://localhost:3001/api/products/${id}`)
+    const res = await fetch(`${API_URL}/api/products/${id}`)
     if (!res.ok) throw new Error('Error al cargar el producto')
     
     product.value = await res.json()
@@ -41,7 +43,7 @@ const fetchProduct = async (id) => {
 
 const fetchRecommended = async () => {
   try {
-    const res = await fetch(`http://localhost:3001/api/products/random?limit=5`)
+    const res = await fetch(`${API_URL}/api/products/random?limit=5`)
     if (res.ok) {
       const data = await res.json()
       // Filtramos para evitar mostrar el producto actual, limitamos a 4

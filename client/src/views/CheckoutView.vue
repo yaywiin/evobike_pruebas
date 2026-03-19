@@ -7,6 +7,7 @@ const cart = useCartStore()
 const isProcessing = ref(false)
 const router = useRouter()
 const mpPublicKey = 'APP_USR-3b174f88-7df2-4b88-ad03-df5619188ee8'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 onMounted(() => {
   if (cart.items.length > 0) {
@@ -43,7 +44,7 @@ const initializePaymentBrick = async () => {
           onSubmit: async (cardFormData) => {
             isProcessing.value = true
             try {
-              const response = await fetch("http://localhost:3001/api/process_payment", {
+              const response = await fetch(`${API_URL}/api/process_payment`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
