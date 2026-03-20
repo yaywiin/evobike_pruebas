@@ -114,15 +114,15 @@ onUnmounted(() => clearInterval(timer))
 /* ── Mobile ── */
 @media (max-width: 768px) {
   .hero {
-    /* top-bar 36px + nav-bar ~68px = 104px */
-    height: calc(100dvh - 104px);
-    min-height: 280px;
+    /* Permitir que la altura se adapte a la proporción de la imagen */
+    height: auto;
+    min-height: auto;
+    /* La mayoría de fotos landscape son 16/9 o similar. Esto evita recortes a los lados. */
+    aspect-ratio: 16 / 9;
   }
 
-  /* Desplaza el punto focal hacia la zona central-superior si las imágenes
-     tienen el sujeto ahí. Ajustar si es necesario. */
   .hero-img {
-    object-position: center 30%;
+    object-position: center;
   }
 }
 </style>
