@@ -255,7 +255,11 @@ app.post("/api/process_payment", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () =>
-  console.log(`Evobike API Proxy running on port ${PORT}`),
-);
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () =>
+    console.log(`Evobike API Proxy running locally on port ${PORT}`)
+  );
+}
+
+module.exports = app;
