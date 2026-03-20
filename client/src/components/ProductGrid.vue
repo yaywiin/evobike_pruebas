@@ -165,9 +165,11 @@ const cart = useCartStore()
   border: 1px solid #f3f4f6;
 }
 
-.product-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+@media (hover: hover) {
+  .product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  }
 }
 
 .product-image-wrapper {
@@ -194,8 +196,10 @@ const cart = useCartStore()
   transition: transform 0.4s ease;
 }
 
-.product-card:hover .product-real-img {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .product-card:hover .product-real-img {
+    transform: scale(1.05);
+  }
 }
 
 .product-badge {
@@ -265,9 +269,11 @@ const cart = useCartStore()
   transition: all 0.2s ease;
 }
 
-.product-card:hover .add-to-cart-btn {
-  background-color: var(--color-brand, #0a6837);
-  color: #ffffff;
+@media (hover: hover) {
+  .product-card:hover .add-to-cart-btn {
+    background-color: var(--color-brand, #0a6837);
+    color: #ffffff;
+  }
 }
 
 /* ── Skeleton Loading ── */
@@ -341,6 +347,11 @@ const cart = useCartStore()
   .product-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+  }
+  
+  .add-to-cart-btn {
+    background-color: var(--color-brand, #0a6837);
+    color: #ffffff;
   }
 }
 </style>
