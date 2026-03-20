@@ -39,7 +39,6 @@ const initializePaymentBrick = async () => {
       const settings = {
         initialization: {
           amount: cart.subtotal,
-          preferenceId: '<PREFERENCE_ID>',
         },
         customization: {
           visual: {

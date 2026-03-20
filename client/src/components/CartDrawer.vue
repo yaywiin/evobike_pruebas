@@ -28,8 +28,11 @@ const closeCart = () => {
 }
 
 const goToCheckout = () => {
-  closeCart() // Cierra el drawer primero
-  router.push('/checkout')
+  console.log('Navigating to checkout...')
+  closeCart() 
+  router.push('/checkout').catch(err => {
+    console.error('Navigation error:', err)
+  })
 }
 </script>
 
