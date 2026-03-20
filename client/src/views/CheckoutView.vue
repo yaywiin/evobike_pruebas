@@ -5,9 +5,12 @@ import { useRouter } from 'vue-router'
 
 const cart = useCartStore()
 const isProcessing = ref(false)
+const isSuccess = ref(false)
+const orderSummary = ref(null)
 const router = useRouter()
 const mpPublicKey = 'APP_USR-3b174f88-7df2-4b88-ad03-df5619188ee8'
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
 
 const customerInfo = reactive({
   email: '',
@@ -77,12 +80,23 @@ const initializePaymentBrick = async () => {
               console.log('Resultado del pago:', result)
               
               if (result.status === 'approved' || result.status === 'in_process') {
-                alert(`¡Pago exitoso o en proceso! ID: ${result.id}`)
+                orderSummary.value = {
+                  id: result.wc_order_id || result.id,
+                  date: new Date().toLocaleDateString('es-MX', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  }),
+                  name: `${customerInfo.firstName} ${customerInfo.lastName}`,
+                  address: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state}`,
+                  total: cart.subtotal
+                }
+                isSuccess.value = true
                 cart.clearCart()
-                router.push('/')
               } else {
                 alert(`Hubo un problema con el pago: ${result.status_detail}`)
               }
+
             } catch (error) {
               console.error(error)
               alert('Ocurrió un error al procesar tu pago por favor intenta de nuevo.')
@@ -127,10 +141,48 @@ const formatPrice = (price) => {
     <div class="container">
       <h1 class="checkout-title">Finalizar Compra</h1>
       
-      <div v-if="cart.items.length === 0" class="empty-checkout">
+      <div v-if="isSuccess" class="success-container">
+        <div class="success-card">
+          <div class="success-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </div>
+          <h2>¡Gracias por tu compra!</h2>
+          <p class="success-msg">Tu pedido ha sido recibido y está siendo procesado.</p>
+          
+          <div class="order-details-box">
+            <div class="detail-row">
+              <span class="label">Número de pedido:</span>
+              <span class="value">#{{ orderSummary.id }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Fecha:</span>
+              <span class="value">{{ orderSummary.date }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Nombre:</span>
+              <span class="value">{{ orderSummary.name }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Lugar de entrega:</span>
+              <span class="value">{{ orderSummary.address }}</span>
+            </div>
+            <div class="detail-row total-row-summary">
+              <span class="label">Total:</span>
+              <span class="value">{{ formatPrice(orderSummary.total) }}</span>
+            </div>
+          </div>
+          
+          <p class="email-notice">Hemos enviado los detalles de tu compra a <strong>{{ customerInfo.email }}</strong></p>
+          
+          <RouterLink to="/" class="btn-continue-shopping">Volver a la tienda</RouterLink>
+        </div>
+      </div>
+
+      <div v-else-if="cart.items.length === 0" class="empty-checkout">
         <p>No tienes productos en tu carrito para procesar.</p>
         <RouterLink to="/" class="btn-return">Volver a la tienda</RouterLink>
       </div>
+
       
       <div v-else class="checkout-grid">
         <!-- Columna de formulario / datos de envío -->
@@ -520,4 +572,117 @@ const formatPrice = (price) => {
     gap: 0;
   }
 }
+
+/* Success State Styles */
+.success-container {
+  max-width: 600px;
+  margin: 2rem auto 4rem;
+  padding: 0 1rem;
+}
+
+.success-card {
+  background: white;
+  padding: 3rem 2rem;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+.success-icon {
+  color: #10A325;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.success-card h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.success-msg {
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin-bottom: 2.5rem;
+}
+
+.order-details-box {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: left;
+  border: 1px solid #f3f4f6;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #ebebeb;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row .label {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.detail-row .value {
+  color: #1a1a1a;
+  font-weight: 600;
+  text-align: right;
+  padding-left: 1rem;
+}
+
+.total-row-summary {
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 2px dashed #d1d5db;
+}
+
+.total-row-summary .label {
+  color: #1a1a1a;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.total-row-summary .value {
+  color: #10A325;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.email-notice {
+  font-size: 0.9rem;
+  color: #4b5563;
+  margin-bottom: 2rem;
+}
+
+.btn-continue-shopping {
+  display: inline-block;
+  background-color: #1a1a1a;
+  color: white;
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.btn-continue-shopping:hover {
+  background-color: #10A325;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(16, 163, 37, 0.2);
+}
 </style>
+
