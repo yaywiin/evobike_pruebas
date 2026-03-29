@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useCartStore } from '@/stores/cart'
 import { useRouter } from 'vue-router'
 
@@ -10,6 +10,54 @@ const orderSummary = ref(null)
 const router = useRouter()
 const mpPublicKey = 'APP_USR-3b174f88-7df2-4b88-ad03-df5619188ee8'
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+// ─── Códigos postales de Zamora y Jacona, Michoacán ───────────────────────
+// Zamora: rangos 59600–59699 + algunos adicionales registrados por SEPOMEX
+// Jacona: rangos 59800–59849 + colonias adicionales hasta 59899
+const isZamoraJaconaCP = (cp) => {
+  const num = parseInt(cp, 10)
+  if (isNaN(num)) return false
+  // Zamora de Hidalgo, Mich.
+  if (num >= 59600 && num <= 59799) return true
+  // Jacona de Plancarte, Mich.
+  if (num >= 59800 && num <= 59899) return true
+  return false
+}
+
+// Valida que sea un CP mexicano (exactamente 5 dígitos numéricos, rango 01000–99999)
+const isMexicanCP = (cp) => {
+  return /^\d{5}$/.test(cp) && parseInt(cp, 10) >= 1000
+}
+
+// ─── Estado reactivo de envío ──────────────────────────────────────────────
+const shippingStatus = ref('pending') // 'pending' | 'free' | 'paid' | 'unavailable'
+const shippingCost = computed(() => {
+  if (shippingStatus.value === 'free') return 0
+  if (shippingStatus.value === 'paid') return 500
+  return null // pending o unavailable
+})
+const orderTotal = computed(() => {
+  if (shippingCost.value === null) return cart.subtotal
+  return cart.subtotal + shippingCost.value
+})
+
+// Evalúa el CP cada vez que cambia
+watch(() => customerInfo.postcode, (cp) => {
+  const trimmed = (cp || '').trim()
+  if (trimmed === '') {
+    shippingStatus.value = 'pending'
+    return
+  }
+  if (!isMexicanCP(trimmed)) {
+    shippingStatus.value = 'unavailable'
+    return
+  }
+  if (isZamoraJaconaCP(trimmed)) {
+    shippingStatus.value = 'free'
+  } else {
+    shippingStatus.value = 'paid'
+  }
+})
 
 
 const customerInfo = reactive({
@@ -41,7 +89,7 @@ const initializePaymentBrick = async () => {
     const renderPaymentBrick = async (bricksBuilder) => {
       const settings = {
         initialization: {
-          amount: cart.subtotal,
+          amount: orderTotal.value,
         },
         customization: {
           visual: {
@@ -89,7 +137,8 @@ const initializePaymentBrick = async () => {
                   }),
                   name: `${customerInfo.firstName} ${customerInfo.lastName}`,
                   address: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state}`,
-                  total: cart.subtotal
+                  total: orderTotal.value,
+                  shipping: shippingCost.value
                 }
                 isSuccess.value = true
                 cart.clearCart()
@@ -269,13 +318,34 @@ const formatPrice = (price) => {
                 <span>Subtotal</span>
                 <span>{{ formatPrice(cart.subtotal) }}</span>
               </div>
-              <div class="total-row">
+
+              <!-- Fila de envío: cambia según el CP -->
+              <div class="total-row" v-if="shippingStatus === 'pending'">
                 <span>Envío</span>
-                <span>Gratis</span>
+                <span class="shipping-pending">Ingresa tu código postal</span>
               </div>
+              <div class="total-row shipping-free" v-else-if="shippingStatus === 'free'">
+                <span>Envío</span>
+                <span class="shipping-badge free">🎉 Gratis</span>
+              </div>
+              <div class="total-row" v-else-if="shippingStatus === 'paid'">
+                <span>Envío</span>
+                <span>{{ formatPrice(500) }}</span>
+              </div>
+              <div class="total-row shipping-error" v-else-if="shippingStatus === 'unavailable'">
+                <span>Envío</span>
+                <span class="shipping-badge unavailable">No disponible</span>
+              </div>
+
+              <!-- Mensaje de error para CP fuera de México -->
+              <div class="shipping-unavailable-msg" v-if="shippingStatus === 'unavailable'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                No realizamos envíos a la dirección proporcionada. Solo enviamos dentro de la República Mexicana.
+              </div>
+
               <div class="total-row grand-total">
                 <span>Total</span>
-                <span>{{ formatPrice(cart.subtotal) }}</span>
+                <span>{{ formatPrice(orderTotal) }}</span>
               </div>
             </div>
             
@@ -507,6 +577,7 @@ const formatPrice = (price) => {
 .total-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   color: #4b5563;
   font-size: 1rem;
 }
@@ -518,6 +589,53 @@ const formatPrice = (price) => {
   margin-top: 0.5rem;
   padding-top: 0.75rem;
   border-top: 1px dashed #d1d5db;
+}
+
+/* Shipping status badges */
+.shipping-pending {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.shipping-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.shipping-badge.free {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.shipping-badge.unavailable {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.shipping-unavailable-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background-color: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+  color: #9a3412;
+  line-height: 1.4;
+  margin-top: 0.25rem;
+}
+
+.shipping-unavailable-msg svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #ea580c;
 }
 
 .btn-pay {
