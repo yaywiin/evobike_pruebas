@@ -66,5 +66,13 @@ export const useAuthStore = defineStore('auth', () => {
     return await res.json()
   }
 
-  return { token, cliente, isLoggedIn, registro, login, logout, fetchPerfil, fetchPedidos }
+  async function fetchDirecciones() {
+    const res = await fetch(`${API_URL}/api/clientes/direcciones`, {
+      headers: { Authorization: `Bearer ${token.value}` }
+    })
+    if (!res.ok) return []
+    return await res.json()
+  }
+
+  return { token, cliente, isLoggedIn, registro, login, logout, fetchPerfil, fetchPedidos, fetchDirecciones }
 })

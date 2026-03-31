@@ -1,9 +1,28 @@
 <script setup>
 import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useCartStore } from '@/stores/cart'
+import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
 const cart = useCartStore()
+const auth = useAuthStore()
+const savedAddresses = ref([])
+const selectedAddressIndex = ref(null)
+
+function selectAddress(index) {
+  selectedAddressIndex.value = index
+  const addr = savedAddresses.value[index]
+  if (addr) {
+    customerInfo.firstName = addr.firstName || ''
+    customerInfo.lastName = addr.lastName || ''
+    customerInfo.email = addr.email || ''
+    customerInfo.phone = addr.phone || ''
+    customerInfo.address = addr.address || ''
+    customerInfo.city = addr.city || ''
+    customerInfo.state = addr.state || ''
+    customerInfo.postcode = addr.postcode || ''
+  }
+}
 const isProcessing = ref(false)
 const isSuccess = ref(false)
 const orderSummary = ref(null)
@@ -71,9 +90,26 @@ watch(() => customerInfo.postcode, (cp) => {
 })
 
 
-onMounted(() => {
+onMounted(async () => {
   if (cart.items.length > 0) {
     initializePaymentBrick()
+  }
+  
+  if (auth.isLoggedIn) {
+    try {
+      const dirs = await auth.fetchDirecciones()
+      if (dirs && dirs.length > 0) {
+        savedAddresses.value = dirs
+        selectAddress(0)
+      } else {
+        customerInfo.firstName = auth.cliente?.nombre || ''
+        customerInfo.lastName = auth.cliente?.apellido || ''
+        customerInfo.email = auth.cliente?.email || ''
+        customerInfo.phone = auth.cliente?.telefono || ''
+      }
+    } catch (e) {
+      console.error('Error cargando direcciones:', e)
+    }
   }
 })
 
@@ -235,6 +271,29 @@ const formatPrice = (price) => {
       <div v-else class="checkout-grid">
         <!-- Columna de formulario / datos de envío -->
         <div class="checkout-form-col">
+          
+          <div class="checkout-block" v-if="savedAddresses.length > 0">
+            <h3>Tus direcciones recientes</h3>
+            <p class="saved-addresses-helper">Selecciona una para pre-llenar tus datos.</p>
+            <div class="addresses-list">
+              <button 
+                v-for="(addr, index) in savedAddresses" 
+                :key="index"
+                class="address-card"
+                :class="{ 'is-selected': selectedAddressIndex === index }"
+                @click="selectAddress(index)"
+                type="button"
+              >
+                <div class="addr-header">
+                  <strong>{{ addr.firstName }} {{ addr.lastName }}</strong>
+                  <svg v-if="selectedAddressIndex === index" class="check-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </div>
+                <p>{{ addr.address }}</p>
+                <p>{{ addr.city }}, {{ addr.state }} CP {{ addr.postcode }}</p>
+              </button>
+            </div>
+          </div>
+
           <div class="checkout-block">
             <h3>Información de Contacto</h3>
             <div class="form-group">
@@ -462,6 +521,61 @@ const formatPrice = (price) => {
   color: #4b5563;
 }
 
+.saved-addresses-helper {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.addresses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.address-card {
+  text-align: left;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+
+.address-card:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.address-card.is-selected {
+  border-color: var(--color-brand, #0a6837);
+  background: #f0fdf4;
+}
+
+.addr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.addr-header strong {
+  font-family: 'Poppins', sans-serif;
+  color: #111827;
+}
+
+.check-icon {
+  color: var(--color-brand, #0a6837);
+}
+
+.address-card p {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
 .form-control {
   padding: 0.75rem 1rem;
   border: 1px solid #d1d5db;
@@ -527,7 +641,8 @@ const formatPrice = (price) => {
   margin-bottom: 1.5rem;
   max-height: 40vh;
   overflow-y: auto;
-  padding-right: 0.5rem;
+  padding-top: 10px;
+  padding-right: 15px; /* prevent right badge cutoff */
 }
 
 .summary-item {

@@ -501,6 +501,71 @@ app.put("/api/clientes/perfil", authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/clientes/direcciones (protegido) — obtiene las últimas 3 direcciones únicas usadas en WooCommerce
+app.get("/api/clientes/direcciones", authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query("SELECT email, telefono, nombre, apellido FROM clientes WHERE id = $1", [req.cliente.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: "Cliente no encontrado" });
+
+    const clienteDB = result.rows[0];
+    const email = clienteDB.email;
+
+    const response = await axios.get(`${WC_URL}/wp-json/wc/v3/orders`, {
+      params: {
+        billing_email: email,
+        per_page: 50, // Buscar suficientes para encontrar hasta 3 únicas
+        orderby: "date",
+        order: "desc",
+        consumer_key: WC_KEY,
+        consumer_secret: WC_SECRET,
+      },
+    });
+
+    if (!Array.isArray(response.data) || response.data.length === 0) {
+      return res.json([]);
+    }
+
+    const direcciones = [];
+    const signatures = new Set(); // Para asegurar unicidad
+
+    for (const order of response.data) {
+      const source = (order.shipping && order.shipping.address_1) ? order.shipping : order.billing;
+      if (!source || !source.address_1) continue;
+
+      const firstName = source.first_name || order.billing.first_name || clienteDB.nombre || '';
+      const lastName = source.last_name || order.billing.last_name || clienteDB.apellido || '';
+      const address = source.address_1;
+      const city = source.city || '';
+      const state = source.state || '';
+      const postcode = source.postcode || '';
+      const phone = order.billing.phone || clienteDB.telefono || '';
+      
+      const signature = `${firstName}|${lastName}|${address}|${city}|${state}|${postcode}`.toLowerCase().trim();
+
+      if (!signatures.has(signature)) {
+        signatures.add(signature);
+        direcciones.push({
+          firstName,
+          lastName,
+          email, 
+          phone,
+          address,
+          city,
+          state,
+          postcode
+        });
+
+        if (direcciones.length === 3) break;
+      }
+    }
+
+    res.json(direcciones);
+  } catch (err) {
+    console.error("Error obteniendo direcciones:", err.message);
+    res.json([]);
+  }
+});
+
 // GET /api/clientes/pedidos (protegido) — consulta WooCommerce por email
 app.get("/api/clientes/pedidos", authMiddleware, async (req, res) => {
   try {

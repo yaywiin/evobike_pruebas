@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { fetchAllProducts, fetchCategories, fetchColors } from '@/services/api'
 import { RouterLink } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
@@ -53,8 +53,27 @@ onMounted(() => {
   loadData()
 })
 
+const itemsPerPage = 12
+const currentPage = ref(1)
+
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return products.value.slice(start, end)
+})
+
+const totalPages = computed(() => Math.ceil(products.value.length / itemsPerPage))
+
+function goToPage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
 // Volver a cargar si cambia algún filtro
 watch([selectedCategory, selectedColor], () => {
+  currentPage.value = 1
   loadData()
 })
 
@@ -121,8 +140,9 @@ watch([selectedCategory, selectedColor], () => {
           <button @click="selectedCategory = ''; selectedColor = ''" class="reset-btn">Limpiar filtros</button>
         </div>
         
-        <div v-else class="product-grid">
-          <div v-for="(product, index) in products" :key="index" class="product-card">
+        <div v-else>
+          <div class="product-grid">
+            <div v-for="(product, index) in paginatedProducts" :key="product.id || index" class="product-card">
             <RouterLink :to="`/producto/${product.id}`" class="product-image-wrapper">
               <img v-if="product.image" :src="product.image" :alt="product.name" class="product-real-img" />
               <div v-else class="product-image-placeholder">
@@ -147,6 +167,38 @@ watch([selectedCategory, selectedColor], () => {
               </div>
               <button class="add-to-cart-btn" @click="cart.addToCart(product)">Agregar al Carrito</button>
             </div>
+          </div>
+          </div>
+
+          <!-- Navegación de Paginación -->
+          <div v-if="totalPages > 1" class="pagination-wrapper">
+            <button 
+              class="page-btn nav-btn" 
+              :disabled="currentPage === 1" 
+              @click="goToPage(currentPage - 1)"
+            >
+              Anterior
+            </button>
+            
+            <div class="page-numbers">
+              <button 
+                v-for="page in totalPages" 
+                :key="page"
+                class="page-btn"
+                :class="{ 'active': currentPage === page }"
+                @click="goToPage(page)"
+              >
+                {{ page }}
+              </button>
+            </div>
+
+            <button 
+              class="page-btn nav-btn" 
+              :disabled="currentPage === totalPages" 
+              @click="goToPage(currentPage + 1)"
+            >
+              Siguiente
+            </button>
           </div>
         </div>
       </main>
@@ -412,5 +464,60 @@ watch([selectedCategory, selectedColor], () => {
   .product-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Styles para paginación */
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.page-btn {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  border-color: var(--color-brand, #0a6837);
+  color: var(--color-brand, #0a6837);
+  background: #f0fdf4;
+}
+
+.page-btn.active {
+  background: var(--color-brand, #0a6837);
+  color: white;
+  border-color: var(--color-brand, #0a6837);
+}
+
+.page-btn.nav-btn {
+  width: auto;
+  padding: 0 1rem;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f3f4f6;
 }
 </style>
