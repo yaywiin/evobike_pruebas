@@ -759,14 +759,33 @@ const handleAddToCart = () => {
     gap: 3rem;
   }
   
+  .product-gallery-container {
+    position: relative;
+    top: 0;
+    z-index: 1;
+  }
+  
   .main-image-box {
-    height: 400px;
+    height: auto;
+    aspect-ratio: 1 / 1;
   }
 }
 
 @media (max-width: 576px) {
+  .product-page {
+    padding: 2rem 0 4rem 0;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
+  .product-view {
+    gap: 2rem;
+  }
+
   .product-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
   
   .add-to-cart-section {
@@ -779,6 +798,15 @@ const handleAddToCart = () => {
   
   .add-to-cart-btn {
     padding: 1rem;
+  }
+  
+  .main-img {
+    padding: 1rem;
+  }
+
+  .thumb-btn {
+    width: 60px;
+    height: 60px;
   }
 }
 </style>
