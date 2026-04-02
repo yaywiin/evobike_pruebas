@@ -102,9 +102,7 @@ import AdminLayout from '../../components/layout/AdminLayout.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
-import { API_URL } from '../../services/api'
-
-const API = `${API_URL}/api/admin/usuarios`
+import { fetchWithAuth } from '../../services/api'
 const router = useRouter()
 const route = useRoute()
 
@@ -129,7 +127,7 @@ onMounted(async () => {
   if (!modoEdicion.value) return
   cargando.value = true
   try {
-    const res = await fetch(`${API}/${route.params.id}`)
+    const res = await fetchWithAuth(`/api/admin/usuarios/${route.params.id}`)
     if (!res.ok) throw new Error('Usuario no encontrado')
     const data = await res.json()
     formulario.value.nombre = data.nombre
@@ -169,8 +167,8 @@ const guardarUsuario = async () => {
       body.password = formulario.value.password
     }
 
-    const res = await fetch(url, {
-      method,
+    const res = await fetchWithAuth(modoEdicion.value ? `/api/admin/usuarios/${route.params.id}` : '/api/admin/usuarios', {
+      method: modoEdicion.value ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     })

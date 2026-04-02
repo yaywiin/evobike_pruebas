@@ -265,9 +265,7 @@ import AdminLayout from '../../components/layout/AdminLayout.vue'
 const router = useRouter()
 const route = useRoute()
 const modoEdicion = computed(() => !!route.params.id)
-import { API_URL } from '../../services/api'
-
-const API = `${API_URL}/api/admin/productos`
+import { fetchWithAuth } from '../../services/api'
 
 const categoriasDisponibles = [
   'BICICLETAS ELÉCTRICAS',
@@ -302,7 +300,7 @@ const formulario = ref({
 onMounted(async () => {
   if (!modoEdicion.value) return
   try {
-    const res = await fetch(`${API}/${route.params.id}`)
+    const res = await fetchWithAuth(`/api/admin/productos/${route.params.id}`)
     if (!res.ok) throw new Error('Producto no encontrado')
     const data = await res.json()
     
@@ -419,11 +417,8 @@ const guardarProducto = async () => {
       }
     }
 
-    const url = modoEdicion.value ? `${API}/${route.params.id}` : API
-    const method = modoEdicion.value ? 'PUT' : 'POST'
-
-    const res = await fetch(url, {
-      method,
+    const res = await fetchWithAuth(modoEdicion.value ? `/api/admin/productos/${route.params.id}` : '/api/admin/productos', {
+      method: modoEdicion.value ? 'PUT' : 'POST',
       body: fd
     })
     const data = await res.json()

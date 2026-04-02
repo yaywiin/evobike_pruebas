@@ -146,11 +146,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import AdminLayout from '../../components/layout/AdminLayout.vue'
-
-import { API_URL, CLIENT_URL } from '../../services/api'
-
-const API = `${API_URL}/api/admin/productos`
+import { fetchWithAuth, CLIENT_URL } from '../../services/api'
 const limit = 10
 
 interface Producto {
@@ -177,7 +173,7 @@ const fetchProductos = async (page = 1) => {
   loading.value = true
   error.value = ''
   try {
-    const res = await fetch(`${API}?page=${page}&limit=${limit}`)
+    const res = await fetchWithAuth(`/api/admin/productos?page=${page}&limit=${limit}`)
     if (!res.ok) throw new Error(`Error ${res.status}`)
     const json = await res.json()
     productos.value = json.data
@@ -198,7 +194,7 @@ const cambiarPagina = (p: number) => {
 const eliminarProducto = async (id: number) => {
   if (!confirm('¿Estás seguro de eliminar este producto?')) return
   try {
-    const res = await fetch(`${API}/${id}`, { method: 'DELETE' })
+    const res = await fetchWithAuth(`/api/admin/productos/${id}`, { method: 'DELETE' })
     if (!res.ok) throw new Error()
     fetchProductos(currentPage.value)
   } catch {

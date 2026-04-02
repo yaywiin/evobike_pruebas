@@ -151,7 +151,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminLayout from '../../components/layout/AdminLayout.vue'
-import { API_URL } from '../../services/api'
+import { fetchWithAuth } from '../../services/api'
 
 interface PedidoItem {
   id: number
@@ -201,7 +201,7 @@ const statusColor = (status: string) => {
 const fetchPedido = async () => {
   loading.value = true
   try {
-    const res = await fetch(`${API_URL}/api/admin/clientes/${route.params.id}`)
+    const res = await fetchWithAuth(`/api/admin/clientes/${route.params.id}`)
     if (!res.ok) throw new Error('No se encontró el pedido')
     const data = await res.json()
     pedido.value = data
@@ -218,7 +218,7 @@ const updateStatus = async () => {
   updating.value = true
   successMsg.value = ''
   try {
-    const res = await fetch(`${API_URL}/api/admin/clientes/${pedido.value.id}/status`, {
+    const res = await fetchWithAuth(`/api/admin/clientes/${pedido.value.id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus.value })

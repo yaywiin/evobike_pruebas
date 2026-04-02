@@ -107,9 +107,7 @@ import AdminLayout from '../../components/layout/AdminLayout.vue'
 
 const router = useRouter()
 
-import { API_URL } from '../../services/api'
-
-const API = `${API_URL}/api/admin/pedidos`
+import { fetchWithAuth } from '../../services/api'
 const limit = 10
 
 interface Pedido {
@@ -144,7 +142,7 @@ const fetchPedidos = async (page = 1) => {
   loading.value = true
   error.value = ''
   try {
-    const res = await fetch(`${API}?page=${page}&limit=${limit}`)
+    const res = await fetchWithAuth(`/api/admin/pedidos?page=${page}&limit=${limit}`)
     if (!res.ok) throw new Error()
     const json = await res.json()
     pedidos.value = json.data

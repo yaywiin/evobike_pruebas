@@ -95,9 +95,7 @@ import AdminLayout from '../../components/layout/AdminLayout.vue'
 
 const router = useRouter()
 
-import { API_URL } from '../../services/api'
-
-const API = `${API_URL}/api/admin/clientes`
+import { fetchWithAuth } from '../../services/api'
 const limit = 10
 
 interface Cliente {
@@ -129,7 +127,7 @@ const fetchClientes = async (page = 1) => {
   loading.value = true
   error.value = ''
   try {
-    const res = await fetch(`${API}?page=${page}&limit=${limit}`)
+    const res = await fetchWithAuth(`/api/admin/clientes?page=${page}&limit=${limit}`)
     if (!res.ok) throw new Error()
     const json = await res.json()
     clientes.value = json.data

@@ -55,7 +55,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { API_URL } from '../../services/api'
+import { fetchWithAuth } from '../../services/api'
 
 const stats = ref({
   customers: 0,
@@ -65,7 +65,7 @@ const stats = ref({
 
 const fetchStats = async () => {
   try {
-    const res = await fetch(`${API_URL}/api/admin/stats`)
+    const res = await fetchWithAuth('/api/admin/stats')
     if (res.ok) {
       stats.value = await res.json()
     }

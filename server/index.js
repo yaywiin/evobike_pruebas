@@ -51,7 +51,7 @@ const db = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-// Middleware para verificar JWT
+// Middleware para verificar JWT Clientes
 const authMiddleware = (req, res, next) => {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No autorizado' });
@@ -60,6 +60,20 @@ const authMiddleware = (req, res, next) => {
     next();
   } catch {
     res.status(401).json({ error: 'Token inválido o expirado' });
+  }
+};
+
+// Middleware para verificar JWT Admin
+const adminAuthMiddleware = (req, res, next) => {
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'Acceso denegado' });
+  try {
+    const decoded = jwt.verify(auth.split(' ')[1], JWT_SECRET);
+    if (!decoded.id || !decoded.rol) throw new Error();
+    req.admin = decoded;
+    next();
+  } catch {
+    res.status(401).json({ error: 'Sesión administrativa inválida' });
   }
 };
 
@@ -311,6 +325,31 @@ app.post("/api/process_payment", async (req, res) => {
 // ─────────────────────────────────────────────
 // MÓDULO DE CLIENTES
 // ─────────────────────────────────────────────
+
+// POST /api/admin/login — Login administrativo (con correo)
+app.post('/api/admin/login', async (req, res) => {
+  const { correo, password } = req.body;
+  if (!correo || !password) return res.status(400).json({ error: 'Correo y contraseña requeridos' });
+
+  try {
+    const { rows } = await db.query(
+      "SELECT * FROM admin_usuarios WHERE correo = $1 AND deleted_at IS NULL",
+      [correo.toLowerCase()]
+    );
+    if (rows.length === 0) return res.status(401).json({ error: "Usuario no encontrado" });
+    const user = rows[0];
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(401).json({ error: "Contraseña incorrecta" });
+    const token = jwt.sign({ id: user.id, usuario: user.usuario, rol: user.rol }, JWT_SECRET, { expiresIn: '8h' });
+    res.json({ token, user: { id: user.id, nombre: user.nombre, usuario: user.usuario, rol: user.rol } });
+  } catch (err) {
+    console.error('Admin Login Error:', err.message);
+    res.status(500).json({ error: "Error en el servidor durante el login" });
+  }
+});
+
+// A partir de aquí, todas las rutas /api/admin requieren autenticación
+app.use('/api/admin', adminAuthMiddleware);
 
 // POST /api/clientes/registro
 app.post("/api/clientes/registro", async (req, res) => {

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -6,6 +7,12 @@ const router = createRouter({
     return savedPosition || { left: 0, top: 0 }
   },
   routes: [
+    {
+      path: '/login',
+      name: 'Login',
+      component: () => import('../views/Login.vue'),
+      meta: { title: 'Login', public: true },
+    },
     {
       path: '/',
       name: 'Dashboard',
@@ -15,9 +22,7 @@ const router = createRouter({
       path: '/admin/usuarios',
       name: 'Usuarios',
       component: () => import('../views/Usuarios/Usuarios.vue'),
-      meta: {
-        title: 'Usuarios',
-      },
+      meta: { title: 'Usuarios' },
     },
     {
       path: '/admin/usuarios/nuevo',
@@ -53,9 +58,7 @@ const router = createRouter({
       path: '/admin/clientes',
       name: 'Clientes',
       component: () => import('../views/Clientes/Clientes.vue'),
-      meta: {
-        title: 'Clientes',
-      },
+      meta: { title: 'Clientes' },
     },
     {
       path: '/admin/clientes/:id',
@@ -67,30 +70,32 @@ const router = createRouter({
       path: '/admin/pedidos',
       name: 'Pedidos',
       component: () => import('../views/Pedidos/Pedidos.vue'),
-      meta: {
-        title: 'Pedidos',
-      },
+      meta: { title: 'Pedidos' },
     },
     {
       path: '/admin/pedidos/:id',
-      name: 'PedidoDetalle',
+      name: 'PedidoDetalle_Real',
       component: () => import('../views/Clientes/PedidoDetalle.vue'),
       meta: { title: 'Detalle de Pedido' },
     },
-    {
-      path: '/signin',
-      name: 'Signin',
-      component: () => import('../views/Auth/Signin.vue'),
-      meta: {
-        title: 'Signin',
-      },
-    },
+    // Redirigir cualquier otra ruta no encontrada a /login
+    { path: '/:pathMatch(.*)*', redirect: '/login' }
   ],
 })
 
-export default router
-
 router.beforeEach((to, from, next) => {
-  document.title = `Vue.js ${to.meta.title} | TailAdmin - Vue.js Tailwind CSS Dashboard Template`
-  next()
+  const auth = useAuthStore()
+  document.title = `Evobike Admin | ${to.meta.title}`
+
+  if (!to.meta.public && !auth.isAuthenticated) {
+    // Si no es pública y no está autenticado, mandamos al login
+    next('/login')
+  } else if (to.name === 'Login' && auth.isAuthenticated) {
+    // Si ya está autenticado e intenta ir al login, mandamos al dashboard
+    next('/admin/usuarios')
+  } else {
+    next()
+  }
 })
+
+export default router

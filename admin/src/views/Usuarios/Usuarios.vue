@@ -98,10 +98,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../../components/layout/AdminLayout.vue'
-
-import { API_URL } from '../../services/api'
-
-const API = `${API_URL}/api/admin/usuarios`
+import { fetchWithAuth } from '../../services/api'
 
 interface AdminUser {
   id: number
@@ -120,7 +117,7 @@ const fetchUsuarios = async () => {
   loading.value = true
   error.value = ''
   try {
-    const res = await fetch(API)
+    const res = await fetchWithAuth('/api/admin/usuarios')
     if (!res.ok) throw new Error(`Error ${res.status}`)
     users.value = await res.json()
   } catch (err: unknown) {
@@ -134,7 +131,7 @@ const fetchUsuarios = async () => {
 const eliminarUsuario = async (id: number) => {
   if (!confirm('¿Estás seguro de eliminar este usuario?')) return
   try {
-    const res = await fetch(`${API}/${id}`, { method: 'DELETE' })
+    const res = await fetchWithAuth(`/api/admin/usuarios/${id}`, { method: 'DELETE' })
     if (!res.ok) throw new Error('Error al eliminar')
     users.value = users.value.filter(u => u.id !== id)
   } catch {
