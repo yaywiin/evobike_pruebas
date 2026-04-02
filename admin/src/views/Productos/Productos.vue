@@ -146,6 +146,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import AdminLayout from '../../components/layout/AdminLayout.vue'
 import { fetchWithAuth, CLIENT_URL } from '../../services/api'
 const limit = 10
 

@@ -11,7 +11,7 @@
         </svg>
       </span>
 
-      <span class="block mr-1 font-medium text-theme-sm">Usuario</span>
+      <span class="block mr-1 font-medium text-theme-sm">{{ auth.user?.nombre || 'Usuario' }}</span>
 
       <ChevronDownIcon :class="{ 'rotate-180': dropdownOpen }" />
     </button>
@@ -23,26 +23,25 @@
     >
       <div>
         <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-          Usuario Administrador
+          {{ auth.user?.nombre || 'Admin' }}
         </span>
         <span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-          admin@evobike.com
+          {{ auth.user?.correo || 'admin@evobike.com' }}
         </span>
       </div>
 
       <!-- <ul class="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
          ... menu items removed ...
       </ul> -->
-      <router-link
-        to="/signin"
+      <button
         @click="signOut"
-        class="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+        class="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300 w-full text-left"
       >
         <LogoutIcon
           class="text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300"
         />
-        Sign out
-      </router-link>
+        Cerrar Sesión
+      </button>
     </div>
     <!-- Dropdown End -->
   </div>
@@ -52,9 +51,13 @@
 import { UserCircleIcon, ChevronDownIcon, LogoutIcon, SettingsIcon, InfoCircleIcon } from '@/icons'
 import { RouterLink } from 'vue-router'
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
+const router = useRouter()
+const auth = useAuthStore()
 
 const menuItems = []
 
@@ -67,8 +70,8 @@ const closeDropdown = () => {
 }
 
 const signOut = () => {
-  // Implement sign out logic here
-  console.log('Signing out...')
+  auth.logout()
+  router.push('/login')
   closeDropdown()
 }
 

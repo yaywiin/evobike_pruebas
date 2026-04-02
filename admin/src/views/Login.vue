@@ -1,17 +1,20 @@
 <template>
   <div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 dark:bg-gray-900 transition-colors">
-    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800">
-      
-      <!-- Logo/Brand Section -->
-      <div class="text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-brand-500 rounded-2xl mb-6 shadow-lg shadow-brand-500/20">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0012 3v1m0 16v1m0-11a3 3 0 110-6 3 3 0 010 6zm6.34 15.66a11.952 11.952 0 01-2.127-2.127M16.24 16.24l.094-.094A10.003 10.003 0 0012 21v-1m0-16V3m0 11l-6-6" />
-          </svg>
-        </div>
-        <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white">Admin Evobike</h2>
-        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Ingresa tus credenciales para continuar</p>
+    <div class="max-w-md w-full">
+      <!-- Logo de la Página Client (Fuera de la caja) -->
+      <div class="flex justify-center mb-8">
+        <img src="/evobike-logo.png" alt="Evobike Logo" class="h-16 w-auto drop-shadow-sm" />
       </div>
+
+      <div class="space-y-8 bg-white p-10 rounded-2xl shadow-xl dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800">
+        <!-- Logo/Brand Section -->
+        <div class="text-center">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-brand-500 rounded-2xl mb-6 shadow-lg shadow-brand-500/20">
+            <UserCircleIcon class="h-10 w-10 text-white" />
+          </div>
+          <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white">Admin Evobike</h2>
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Ingresa tus credenciales para continuar</p>
+        </div>
 
       <!-- Form Section -->
       <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
@@ -60,6 +63,7 @@
           </button>
         </div>
       </form>
+      </div>
     </div>
   </div>
 </template>
@@ -68,6 +72,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { UserCircleIcon } from '../icons'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -84,7 +89,7 @@ const handleLogin = async () => {
   
   try {
     await auth.login(correo.value, password.value)
-    router.push('/admin') // Redirigir al dashboard después del login
+    router.push('/') // Redirigir al dashboard después del login
   } catch (err: any) {
     error.value = err.message
   } finally {

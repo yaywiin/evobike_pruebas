@@ -201,21 +201,6 @@
       </nav>
       <!-- <SidebarWidget v-if="isExpanded || isHovered || isMobileOpen" /> -->
       
-      <!-- Logout Button Section -->
-      <div 
-        class="mt-auto pb-10 border-t border-gray-100 dark:border-gray-800 pt-6 px-2"
-        v-if="isExpanded || isHovered || isMobileOpen"
-      >
-        <button 
-          @click="handleLogout"
-          class="flex items-center gap-3 w-full px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all font-medium"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          <span>Cerrar Sesión</span>
-        </button>
-      </div>
     </div>
   </aside>
 </template>
@@ -250,12 +235,6 @@ const auth = useAuthStore();
 
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
 
-const handleLogout = () => {
-  if (confirm('¿Deseas cerrar la sesión administrativa?')) {
-    auth.logout();
-    router.push('/login');
-  }
-};
 
 const menuGroups = [
   {
