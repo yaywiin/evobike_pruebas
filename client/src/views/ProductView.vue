@@ -808,5 +808,9 @@ const handleAddToCart = () => {
     width: 60px;
     height: 60px;
   }
+
+  .thumbnail-list {
+    display: none;
+  }
 }
 </style>

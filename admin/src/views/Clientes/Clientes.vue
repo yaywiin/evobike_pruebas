@@ -28,7 +28,7 @@
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
               <tr
-                v-for="cliente in displayClientes"
+                v-for="cliente in clientes"
                 :key="cliente.id"
                 class="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition cursor-pointer"
                 @click="verDetalle(cliente.id)"
@@ -56,7 +56,7 @@
                   <p class="text-gray-500 text-theme-sm dark:text-gray-400">{{ cliente.created_at }}</p>
                 </td>
               </tr>
-              <tr v-if="displayClientes.length === 0">
+              <tr v-if="clientes.length === 0">
                 <td colspan="5" class="px-5 py-12 text-center text-gray-400 text-theme-sm dark:text-gray-500">Sin clientes registrados aún.</td>
               </tr>
             </tbody>
@@ -111,30 +111,15 @@ interface Cliente {
   created_at: string
 }
 
-const exampleData: Cliente[] = [
-  { id: 1001, nombre: 'Ana', apellido: 'García', email: 'ana@ejemplo.com', telefono: '3312345678', ciudad: 'Guadalajara', estado: 'Jalisco', total_pedido: 1500, mp_status: 'approved', created_at: '01/04/2024' },
-  { id: 1002, nombre: 'Luis', apellido: 'Martínez', email: 'luis@ejemplo.com', telefono: '5587654321', ciudad: 'CDMX', estado: 'Estado de México', total_pedido: 2400, mp_status: 'approved', created_at: '31/03/2024' },
-  { id: 1003, nombre: 'Elena', apellido: 'Pérez', email: 'elena@ejemplo.com', telefono: '4431223344', ciudad: 'Morelia', estado: 'Michoacán', total_pedido: 12000, mp_status: 'in_process', created_at: '30/03/2024' },
-  { id: 1004, nombre: 'Roberto', apellido: 'Sánchez', email: 'roberto@ejemplo.com', telefono: '8112348899', ciudad: 'Monterrey', estado: 'Nuevo León', total_pedido: 580, mp_status: 'approved', created_at: '29/03/2024' },
-  { id: 1005, nombre: 'Claudia', apellido: 'Ruiz', email: 'claudia@ejemplo.com', telefono: '9995554433', ciudad: 'Mérida', estado: 'Yucatán', total_pedido: 3500, mp_status: 'approved', created_at: '28/03/2024' }
-]
-
 const clientes = ref<Cliente[]>([])
 const total = ref(0)
 const currentPage = ref(1)
 const loading = ref(true)
 const error = ref('')
 
-// Combinamos datos reales con ejemplos si estamos en la primera página
-const displayClientes = computed(() => {
-  if (currentPage.value === 1 && clientes.value.length === 0) return exampleData
-  return clientes.value
-})
-
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / limit)))
 
 const verDetalle = (id: number) => {
-  if (id > 1000) return // Evitar entrar a detalle de ejemplos hardcoded
   router.push(`/admin/clientes/${id}`)
 }
 
@@ -146,13 +131,10 @@ const fetchClientes = async (page = 1) => {
     if (!res.ok) throw new Error()
     const json = await res.json()
     clientes.value = json.data
-    total.value = json.total || exampleData.length
+    total.value = json.total
     currentPage.value = json.page
   } catch {
-    // Si falla la API mostramos los ejemplos
-    clientes.value = []
-    total.value = exampleData.length
-    currentPage.value = 1
+    error.value = 'No se pudieron cargar los clientes del servidor.'
   } finally {
     loading.value = false
   }

@@ -826,6 +826,36 @@ app.get('/api/admin/clientes', async (req, res) => {
   const offset = (page - 1) * limit;
   try {
     const [{ rows: [{ total }] }, { rows: clientes }] = await Promise.all([
+      db.query(`SELECT COUNT(DISTINCT email) AS total FROM clientes_evobike WHERE deleted_at IS NULL`),
+      db.query(
+        `SELECT id, nombre, apellido, email, telefono, ciudad, estado,
+                total_pedido, mp_status,
+                TO_CHAR(created_at, 'DD/MM/YYYY') AS created_at
+         FROM (
+           SELECT DISTINCT ON (email) *
+           FROM clientes_evobike
+           WHERE deleted_at IS NULL
+           ORDER BY email, created_at DESC
+         ) AS sub
+         ORDER BY id DESC
+         LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      )
+    ]);
+    res.json({ data: clientes, total: parseInt(total), page, limit });
+  } catch (err) {
+    console.error('GET /api/admin/clientes:', err.message);
+    res.status(500).json({ error: 'Error al obtener clientes' });
+  }
+});
+
+// GET /api/admin/pedidos?page=1&limit=10 — Lista TODOS los pedidos (sin agrupar)
+app.get('/api/admin/pedidos', async (req, res) => {
+  const page  = Math.max(1, parseInt(req.query.page)  || 1);
+  const limit = Math.max(1, parseInt(req.query.limit) || 10);
+  const offset = (page - 1) * limit;
+  try {
+    const [{ rows: [{ total }] }, { rows: pedidos }] = await Promise.all([
       db.query(`SELECT COUNT(*) AS total FROM clientes_evobike WHERE deleted_at IS NULL`),
       db.query(
         `SELECT id, nombre, apellido, email, telefono, ciudad, estado,
@@ -838,10 +868,10 @@ app.get('/api/admin/clientes', async (req, res) => {
         [limit, offset]
       )
     ]);
-    res.json({ data: clientes, total: parseInt(total), page, limit });
+    res.json({ data: pedidos, total: parseInt(total), page, limit });
   } catch (err) {
-    console.error('GET /api/admin/clientes:', err.message);
-    res.status(500).json({ error: 'Error al obtener clientes' });
+    console.error('GET /api/admin/pedidos error:', err.message);
+    res.status(500).json({ error: 'Error al obtener pedidos' });
   }
 });
 
@@ -874,6 +904,25 @@ app.patch('/api/admin/clientes/:id/status', async (req, res) => {
   } catch (err) {
     console.error('PATCH /api/admin/clientes status:', err.message);
     res.status(500).json({ error: 'Error al actualizar estado' });
+  }
+});
+
+// GET /api/admin/stats — Estadísticas para el Dashboard
+app.get('/api/admin/stats', async (req, res) => {
+  try {
+    const [{ rows: [{ customers }] }, { rows: [{ orders }] }, { rows: [{ products }] }] = await Promise.all([
+      db.query(`SELECT COUNT(DISTINCT email) AS customers FROM clientes_evobike WHERE deleted_at IS NULL`),
+      db.query(`SELECT COUNT(*) AS orders FROM clientes_evobike WHERE deleted_at IS NULL`),
+      db.query(`SELECT COUNT(*) AS products FROM productos WHERE deleted_at IS NULL`)
+    ]);
+    res.json({
+      customers: parseInt(customers),
+      orders: parseInt(orders),
+      products: parseInt(products)
+    });
+  } catch (err) {
+    console.error('GET /api/admin/stats error:', err.message);
+    res.status(500).json({ error: 'Error al obtener estadísticas' });
   }
 });
 
