@@ -3,6 +3,7 @@ import { RouterView } from 'vue-router'
 import SiteHeader from './components/SiteHeader.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import FloatingButtons from './components/FloatingButtons.vue'
+import ChatWidget from './components/ChatWidget.vue'
 </script>
 
 <template>
@@ -12,6 +13,7 @@ import FloatingButtons from './components/FloatingButtons.vue'
   </main>
   <SiteFooter />
   <FloatingButtons />
+  <ChatWidget />
 </template>
 
 <style>
