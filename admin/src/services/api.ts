@@ -11,15 +11,21 @@ export const CLIENT_URL = rawClientUrl.replace(/\/$/, '')
 export async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem('admin_token')
   
-  const headers = {
-    'Content-Type': 'application/json',
+  const headers: Record<string, string> = {
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-    ...options.headers,
   }
+
+  // Solo agregar application/json si no es FormData (para que el navegador setee el boundary del multipart automático)
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json'
+  }
+
+  // Merge custom headers if any
+  const finalHeaders = { ...headers, ...options.headers }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
-    headers,
+    headers: finalHeaders,
   })
 
   if (response.status === 401) {

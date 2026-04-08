@@ -261,6 +261,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminLayout from '../../components/layout/AdminLayout.vue'
+import imageCompression from 'browser-image-compression'
 
 const router = useRouter()
 const route = useRoute()
@@ -378,6 +379,20 @@ const eliminarColor = (idx: number) => {
 const guardando = ref(false)
 const errorServidor = ref('')
 
+const compressImage = async (file: File) => {
+  const options = {
+    maxSizeMB: 0.8, // 800 KB máximo
+    maxWidthOrHeight: 1600,
+    useWebWorker: true,
+  }
+  try {
+    return await imageCompression(file, options)
+  } catch (error) {
+    console.error('Error comprimiendo imagen', error)
+    return file
+  }
+}
+
 const guardarProducto = async () => {
   guardando.value = true
   errorServidor.value = ''
@@ -393,27 +408,31 @@ const guardarProducto = async () => {
     fd.append('voltajes', JSON.stringify(formulario.value.voltajes))
 
     // Imagen principal
-    if (formulario.value.foto_principal) {
+    if (formulario.value.foto_principal instanceof File) {
+      const compressedMain = await compressImage(formulario.value.foto_principal)
+      fd.append('foto_principal', compressedMain)
+    } else if (formulario.value.foto_principal) {
       fd.append('foto_principal', formulario.value.foto_principal)
     }
 
     // Ignoramos galerías ya subidas (string) y agregamos nuevas (File)
     for (const foto of formulario.value.galeria) {
       if (foto instanceof File) {
-        fd.append('galeria', foto)
+        const compressedGal = await compressImage(foto)
+        fd.append('galeria', compressedGal)
       }
     }
 
     // Colores
     const nombresColores = formulario.value.colores.map(c => c.nombre)
     fd.append('colores_nombres', JSON.stringify(nombresColores))
-    // (Por simplicidad: en este script de PUT básico en Backend solo soporta re-subir si son nuevas)
+    
     for (const color of formulario.value.colores) {
       if (color.foto instanceof File) {
-        fd.append('colores_fotos', color.foto)
+        const compressedCol = await compressImage(color.foto)
+        fd.append('colores_fotos', compressedCol)
       } else {
-        // En un API real, enviaríamos la URL para preservarla, pero por tiempo
-        // el API omite actualizaciones complejas.
+        // ...
       }
     }
 

@@ -1,22 +1,16 @@
 <template>
   <AdminLayout>
     <div>
-      <div class="flex flex-col gap-5 mb-6">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">Productos</h2>
-          <router-link
-            to="/admin/productos/nuevo"
-            class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Agregar Producto
-          </router-link>
-        </div>
+      <!-- Header Fila Principal -->
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+        
+        <!-- Título a la izquierda -->
+        <h2 class="text-xl font-bold text-gray-800 dark:text-white/90 whitespace-nowrap">
+          Productos
+        </h2>
 
-        <!-- Barra de Búsqueda -->
-        <div class="relative max-w-md w-full">
+        <!-- Barra de Búsqueda al centro -->
+        <div class="relative w-full max-w-md sm:ml-auto sm:mr-4">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -29,6 +23,18 @@
             class="block w-full pl-10 pr-4 py-2.5 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-800/50 dark:border-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-brand-500 dark:focus:border-brand-500 outline-none transition-all"
           />
         </div>
+
+        <!-- Botón a la derecha extremo -->
+        <router-link
+          to="/admin/productos/nuevo"
+          class="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 transition"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Agregar Producto
+        </router-link>
+        
       </div>
 
       <!-- Loading / Error -->

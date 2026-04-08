@@ -253,7 +253,6 @@ const handleAddToCart = () => {
             </div>
           </div>
 
-          <!-- Componente de Stock/Cantidad -->
           <div class="add-to-cart-section">
             <div class="quantity-selector">
               <button class="qty-btn" @click="decreaseQty" aria-label="Disminuir">-</button>
@@ -266,20 +265,99 @@ const handleAddToCart = () => {
             </button>
           </div>
           
-          <!-- Aviso de Pagos y Seguridad -->
-          <div class="payment-notice">
-            <p>Aceptamos <strong>tarjetas de crédito y débito</strong> y <strong>transferencias bancarias</strong>.</p>
-            <p><strong>Todos los pedidos están sujetos a validación de identidad</strong> (el nombre del titular de la tarjeta debe coincidir con el nombre registrado en el pedido), podrán ser <strong>cancelados y reembolsados</strong> si no se completa el proceso de verificación.</p>
-            <p class="delivery-disclaimer">*Será necesario presentar una identificación oficial al momento de la entrega.</p>
-          </div>
-          
-          <!-- Beneficios extra -->
-          <ul class="product-features">
-            <li><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5l10 -10"/></svg> Garantía de ensamblaje</li>
-            <li><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5l10 -10"/></svg> Soporte técnico 24/7</li>
-          </ul>
-
           <div class="product-short-desc margin-top" v-html="product.shortDescription || product.description"></div>
+
+          <!-- Bloque de información extra y garantías -->
+          <div class="extra-info-container">
+
+            <div class="info-row">
+              <div class="info-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+              </div>
+              <div class="info-content">
+                <strong>Disponible para envío</strong>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              </div>
+              <div class="info-content">
+                <strong>Recogida disponible en Sucursal Centro</strong>
+                <p class="subtitle-info">Normalmente está listo en 2 a 4 días</p>
+                <a href="#" class="link-info" @click.prevent>Consultar disponibilidad en tienda</a>
+              </div>
+            </div>
+
+            <div class="payment-methods-list">
+              <span class="pm-chip">Visa</span>
+              <span class="pm-chip">Mastercard</span>
+              <span class="pm-chip">Amex</span>
+              <span class="pm-chip">Amazon Pay</span>
+              <span class="pm-chip">Apple Pay</span>
+              <span class="pm-chip">PayPal</span>
+            </div>
+
+            <!-- Aviso de Pagos y Seguridad -->
+            <div class="payment-notice">
+              <p>Aceptamos <strong>tarjetas de crédito y débito</strong> y <strong>transferencias bancarias</strong>.</p>
+              <p><strong>Todos los pedidos están sujetos a validación de identidad</strong> (el nombre del titular de la tarjeta debe coincidir con el nombre registrado en el pedido), podrán ser <strong>cancelados y reembolsados</strong> si no se completa el proceso de verificación.</p>
+              <p class="delivery-disclaimer">*Será necesario presentar una identificación oficial al momento de la entrega.</p>
+            </div>
+
+            <!-- Grid de Características y Garantías -->
+            <div class="feature-grid">
+              <div class="feature-box">
+                <div class="feature-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                </div>
+                <div class="feature-text">
+                  <strong>1 año de garantía</strong>
+                  <p>Tu Evobike cuenta con una garantía limitada de 1 año en componentes clave, como motor y controlador. Compra con confianza</p>
+                </div>
+              </div>
+
+              <div class="feature-box">
+                <div class="feature-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                </div>
+                <div class="feature-text">
+                  <strong>Cambios 5 días hábiles</strong>
+                </div>
+              </div>
+
+              <div class="feature-box">
+                <div class="feature-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                </div>
+                <div class="feature-text">
+                  <strong>Recoge en sucursal</strong>
+                </div>
+              </div>
+
+              <div class="feature-box">
+                <div class="feature-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                </div>
+                <div class="feature-text">
+                  <strong>Pagos seguros</strong>
+                  <p>Compra con total seguridad</p>
+                </div>
+              </div>
+
+              <div class="feature-box">
+                <div class="feature-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                </div>
+                <div class="feature-text">
+                  <strong>Servicio técnico oficial</strong>
+                  <p>Soporte especializado y refacciones originales EvoBike.</p>
+                </div>
+              </div>
+            </div>
+            
+          </div>
 
         </div>
       </div>
@@ -663,6 +741,115 @@ const handleAddToCart = () => {
 
 .product-features svg {
   color: var(--color-brand, #0a6837);
+}
+
+/* ── EXTRA INFO CONTAINER ── */
+.extra-info-container {
+  margin-top: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.info-icon {
+  color: var(--color-brand, #0a6837);
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-family: 'Inter', sans-serif;
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.subtitle-info {
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.85rem;
+}
+
+.link-info {
+  color: #111827;
+  text-decoration: underline;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 0.25rem;
+}
+
+.link-info:hover {
+  color: var(--color-brand, #0a6837);
+}
+
+.payment-methods-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.pm-chip {
+  padding: 0.35rem 0.75rem;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5563;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── FEATURE GRID ── */
+.feature-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.feature-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.feature-icon {
+  color: var(--color-brand, #0a6837);
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.feature-text.strong {
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.feature-text p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.5;
 }
 
 /* ── TABS/DESCRIPCION ABAJO ── */
